@@ -15,6 +15,10 @@ public class Hero : MonoBehaviour {
 	//ship status information
 	[SerializeField]
 	private float _shieldLevel = 1;
+
+	//Weapon fields
+	public Weapon[] weapons;
+
 	public bool ________________;
 
 	public Bounds bounds;
@@ -26,6 +30,12 @@ public class Hero : MonoBehaviour {
 	void Awake() {
 		S = this; // set the singleton
 		bounds = Utils.CombineBoundsOfChildren (this.gameObject);
+	}
+
+	void Start() {
+		//reset the weapons to start _Hero with 1 blaster
+		ClearWeapons ();
+		weapons [0].SetType (WeaponType.blaster);
 	}
 
 	void Update () {
@@ -78,6 +88,9 @@ public class Hero : MonoBehaviour {
 				shieldLevel--;
 				//destory the enemy
 				Destroy(go);
+			} else if (go.tag ==  "PowerUp") {
+				//if the shield was triggered by a PowerUp
+				AbsorbPowerUp(go);
 			} else { 
 				print ("Triggered: " + go.name);
 			}
@@ -100,6 +113,47 @@ public class Hero : MonoBehaviour {
 				//Tell Main.S to restart the game after a delay
 				Main.S.DelayedRestart(gameRestartDelay);
 			}
+		}
+	}
+
+	public void AbsorbPowerUp (GameObject go) {
+		PowerUp pu = go.GetComponent<PowerUp> ();
+		switch (pu.type) {
+		case WeaponType.shield: // if it's the shield
+			shieldLevel++;
+			break;
+
+		default: //if it's any Weapon PowerUp
+			//check the current weapon type
+			if (pu.type == weapons [0].type) {
+				//then increase the number of weapons of this type
+				Weapon w = GetEmptyWeaponSlot (); //find an available weapon
+				if (w != null) {
+					//set it to pu.type
+					w.SetType (pu.type);
+				}
+			} else {
+				//if this is a different weapon
+				ClearWeapons (); 
+				weapons [0].SetType (pu.type);
+			}
+			break;
+		}
+		pu.AbsorbedBy (this.gameObject);
+	}
+
+	Weapon GetEmptyWeaponSlot() {
+		for (int i=0; i<weapons.Length; i++) {
+			if (weapons [i].type == WeaponType.none) {
+				return (weapons [i]); 
+			}
+		}
+		return (null); 
+	}
+
+	void ClearWeapons() {
+		foreach (Weapon w in weapons) {
+			w.SetType (WeaponType.none);
 		}
 	}
 }
