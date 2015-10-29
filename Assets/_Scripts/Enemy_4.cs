@@ -3,7 +3,7 @@ using System.Collections;
 
 // Part is another serializable data storage class just like WeaponDefinition
 [System.Serializable]
-public class Part{
+public class Part {
 	// These three fields need to be defined in the Inspector pane
 	public string	name;		// The name of this part
 	public float	health;		// The amount of health this part has
